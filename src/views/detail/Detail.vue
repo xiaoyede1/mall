@@ -2,26 +2,31 @@
 	<div id="detail">
     <detail-nav-bar/>
     <detail-swiper :top-images="topImages"/>
+    <detail-base-info :goods="goods"/>
+    <detail-shop-info :shop="shop"/>
 	</div>
 </template>
 
 <script>
   import DetailNavBar from "./childComps/DetailNavBar";
   import DetailSwiper from "./childComps/DetailSwiper";
+  import DetailBaseInfo from "./childComps/DetailBaseInfo";
+  import DetailShopInfo from "./childComps/DetailShopInfo";
 
-
-  import {getDetail} from "network/detail";
+  import {getDetail,Goods,Shop} from "network/detail";
 
 	export default {
 		name: "Detail",
     data(){
 		  return {
 		    iid : null,
-        topImages:[]
+        topImages:[],
+        goods:{},
+        shop:{}
       }
     },
     components:{
-		  DetailNavBar,DetailSwiper
+		  DetailNavBar,DetailSwiper,DetailBaseInfo,DetailShopInfo
     },
     created() {
 		  this.iid = this.$route.params.iid
@@ -30,16 +35,23 @@
     },
     methods:{
 		  async getDetailData(iid){
-		    const result = await getDetail(iid)
+		    const result = (await getDetail(iid)).result
         console.log(result);
         //获取顶部图片轮播数据
-        this.topImages = result.result.itemInfo.topImages
-
+        this.topImages = result.itemInfo.topImages
+        //获取商品信息
+        this.goods = new Goods(result.itemInfo,result.columns,result.shopInfo.services)
+        //获取店铺信息
+        this.shop = new Shop(result.shopInfo)
       }
     }
   }
 </script>
 
 <style scoped>
-
+  #detail{
+    position: relative;
+    z-index: 9;
+    background-color: #fff;
+  }
 </style>

@@ -12,7 +12,7 @@
         <recommand-view :recommend="recommend"/>
         <feature-view/>
         <tab-control
-          :title="['流行','新款','精选']"
+          :titles="['流行','新款','精选']"
           @tabClick="tabClick"
           ref="tabControl2"/>
         <goods-list :goods="showGoods"/>
@@ -80,7 +80,7 @@
         this.$eventBus.$on('itemImageLoad',()=>refresh())
       },
       activated() {
-        this.$refs.scroll.scrollTo(0,this.saveY,0)
+        this.$refs.scroll.scrollTo(0,this.saveY,100)
         this.$refs.scroll.refresh()
       },
       deactivated() {
