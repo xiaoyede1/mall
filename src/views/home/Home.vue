@@ -26,14 +26,13 @@
     import Scroll from "components/common/scroll/Scroll";
     import TabControl from "components/content/tabControl/TabControl"
     import GoodsList from "components/content/goods/GoodsList";
-    import BackTop from "components/content/backTop/BackTop";
 
     import HomeSwiper from "./childComps/HomeSwiper";
     import RecommandView from "./childComps/RecommandView";
     import FeatureView from "./childComps/FeatureView";
 
     import {getHomeMultidata,getHomeGoods} from "network/home";
-    import {debounce} from "common/utils";
+    import {imgLoadMixin} from "common/mixin";
 
     export default {
       name: "Home",
@@ -47,10 +46,9 @@
             sell:{page:0,list:[]}
           },
           currentType:'pop',
-          isShowBackTop:false,
           tabOffsetTop:0,
           isTabFixed:false,
-          saveY:0
+          saveY:0,
         }
       },
       computed:{
@@ -66,18 +64,13 @@
         TabControl,
         GoodsList,
         Scroll,
-        BackTop
       },
+      mixins:[imgLoadMixin],
       created() {
         this.getHomeMultidata()
         this.getHomeGoods('pop')
         this.getHomeGoods('new')
         this.getHomeGoods('sell')
-      },
-      mounted() {
-        //图片加载完成的事件监听
-        const refresh = debounce(this.$refs.scroll.refresh,100)
-        this.$eventBus.$on('itemImageLoad',()=>refresh())
       },
       activated() {
         this.$refs.scroll.scrollTo(0,this.saveY,100)
@@ -85,6 +78,7 @@
       },
       deactivated() {
         this.saveY = this.$refs.scroll.getScrollY()
+        this.$eventBus.$off('itemImageLoad',this.imgRefresh)
       },
       methods:{
         //事件监听方法
@@ -103,13 +97,10 @@
           this.$refs.tabControl1.currentIndex = index;
           this.$refs.tabControl2.currentIndex = index;
         },
-        backClick(){
-          this.$refs.scroll.scrollTo(0,0)
-        },
         contentScroll(position){
           //判断BackTop是否显示
           this.isShowBackTop = position.y < -1000
-          //判断tabControl是否吸顶
+          //判断吸顶是否显示
           this.isTabFixed = -position.y > this.tabOffsetTop
         },
         loadMore(){

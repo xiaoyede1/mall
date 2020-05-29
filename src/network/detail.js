@@ -32,3 +32,17 @@ export class Shop{
     this.goodsCount = shopInfo.cGoods
   }
 }
+
+export class GoodsParams {
+  constructor(info,rule) {
+    this.image = info.image?info.image[0]:'';
+    this.infos = info.set;
+    this.sizes = rule.tables
+  }
+}
+
+export function getRecommend() {
+  return request({
+    url:'/recommend'
+  })
+}
