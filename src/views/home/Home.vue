@@ -98,10 +98,11 @@
           this.$refs.tabControl2.currentIndex = index;
         },
         contentScroll(position){
+          const positionY = -position.y
           //判断BackTop是否显示
-          this.isShowBackTop = position.y < -1000
+          this.isShowBackTop = positionY > 1000
           //判断吸顶是否显示
-          this.isTabFixed = -position.y > this.tabOffsetTop
+          this.isTabFixed = positionY > this.tabOffsetTop
         },
         loadMore(){
           this.getHomeGoods(this.currentType)

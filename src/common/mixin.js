@@ -13,7 +13,6 @@ export const imgLoadMixin = {
     //图片加载完成的事件监听
     this.imgRefresh = ()=> debounce(this.$refs.scroll.refresh,100)
     this.$eventBus.$on('itemImageLoad',this.imgRefresh)
-    console.log('混入内容');
   },
   components:{
     BackTop

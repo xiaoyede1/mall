@@ -1,15 +1,16 @@
 <template>
 	<div id="detail">
-    <detail-nav-bar class="detail-nav"/>
+    <detail-nav-bar @titleClick="titleClick" :current-index="currentIndex"/>
     <scroll class="content" ref="scroll" :probe-type="3" @scroll="contentScroll">
       <detail-swiper :top-images="topImages"/>
       <detail-base-info :goods="goods"/>
       <detail-shop-info :shop="shop"/>
       <detail-goods-info :detail-info="detailInfo" @imageLoad="imageLoad"/>
-      <detail-params-info :params-info="paramsInfo"/>
-      <detail-comment-info :comment-info="commentInfo"/>
-      <goods-list :goods="recommends"/>
+      <detail-params-info ref="params" :params-info="paramsInfo"/>
+      <detail-comment-info ref="comment" :comment-info="commentInfo"/>
+      <goods-list ref="recommend" :goods="recommends"/>
     </scroll>
+    <detail-bottom-bar/>
     <back-top @click.native="backClick" v-show="isShowBackTop"/>
   </div>
 </template>
@@ -22,6 +23,7 @@
   import DetailGoodsInfo from "./childComps/DetailGoodsInfo";
   import DetailParamsInfo from "./childComps/DetailParamsInfo";
   import DetailCommentInfo from "./childComps/DetailCommentInfo";
+  import DetailBottomBar from "./childComps/DetailBottomBar";
   import GoodsList from "components/content/goods/GoodsList";
 
   import Scroll from "components/common/scroll/Scroll";
@@ -29,6 +31,7 @@
   import {imgLoadMixin} from "common/mixin";
 
   import {getDetail,Goods,Shop,GoodsParams,getRecommend} from "network/detail";
+  import {debounce} from "common/utils";
 
 	export default {
 		name: "Detail",
@@ -42,6 +45,9 @@
         paramsInfo:{},
         commentInfo:{},
         recommends:[],
+        themeTopYs:[],
+        getThemeTopY:null,
+        currentIndex:0
       }
     },
     components:{
@@ -52,6 +58,7 @@
       DetailGoodsInfo,
       DetailParamsInfo,
       DetailCommentInfo,
+      DetailBottomBar,
       GoodsList,
       Scroll
     },
@@ -61,6 +68,14 @@
 
       this.getDetailData(this.iid)
       this.getRecommendData()
+
+      this.getThemeTopY = debounce(()=>{
+        this.themeTopYs = []
+        this.themeTopYs.push(0)
+        this.themeTopYs.push(this.$refs.params.$el.offsetTop)
+        this.themeTopYs.push(this.$refs.comment.$el.offsetTop)
+        this.themeTopYs.push(this.$refs.recommend.$el.offsetTop)
+      })
     },
     destroyed() {
       this.$eventBus.$off('itemImageLoad',this.imgRefresh)
@@ -81,20 +96,33 @@
         this.paramsInfo = new GoodsParams(result.itemParams.info,result.itemParams.rule)
         //获取评论信息
         this.commentInfo = result.rate.cRate >0 ? result.rate.list[0] : {}
-        //获取推荐信息
+
       },
       async getRecommendData(){
 		    const result = await getRecommend()
-        // console.log(result);
+        //获取推荐信息
 		    this.recommends = result.data.list
       },
       imageLoad(){
 		    this.$refs.scroll.refresh()
+        this.getThemeTopY()
       },
       contentScroll(position){
+		    const positionY = -position.y
         //判断BackTop是否显示
-        this.isShowBackTop = position.y < -1000
+        this.isShowBackTop =  positionY > 1000
+        //滚动标题切换
+        this.themeTopYs.forEach((item,index)=>{
+          if(this.currentIndex === index)return
+          if(positionY >= item){
+            this.currentIndex = index
+          }
+        })
+
       },
+      titleClick(index){
+		    this.$refs.scroll.scrollTo(0,-this.themeTopYs[index],500)
+      }
     }
   }
 </script>
@@ -106,12 +134,10 @@
     background-color: #fff;
     height: 100vh;
   }
-  .detail-nav{
-    position: relative;
-    z-index: 9;
-    background-color: #fff;
-  }
   .content{
-    height: calc(100% - 44px);
+    height: calc(100% - 44px - 49px);
+    position: absolute;
+    top: 44px;
+    bottom: 60px;
   }
 </style>

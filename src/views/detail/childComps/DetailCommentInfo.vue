@@ -42,7 +42,6 @@
     filters: {
 		  showDate(value) {
         let date = new Date(value*1000);
-        console.log(date.toLocaleString());
         return formatDate(date, 'yyyy-MM-dd hh:mm:ss')
       }
     }
